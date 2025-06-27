@@ -153,5 +153,14 @@ Ensure that the following environment variables are configured correctly:
 ## **Accessing the Deployed Application**
 
 Once the deployment is complete, you can retrieve the LoadBalancer URL by running:
+kubectl get svc -n webapps
+Use this URL to access your deployed application.
 
-```bash
+## **Cleaning Up Resources**
+After testing, you can delete the Kubernetes cluster to free up resources:
+eksctl delete cluster --name EKS-1 --region ap-south-1
+
+Contributing
+Feel free to fork this repository, create an issue, or submit a pull request with improvements or bug fixes!
+
+
