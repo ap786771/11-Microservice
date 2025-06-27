@@ -1,3 +1,4 @@
+# ** Read Blog: https://amitsinghs.hashnode.dev/11-microservices-cicd-pipeline-e-commerce-project-eks **
 # **E-Commerce Microservices CI/CD Pipeline with Jenkins and AWS EKS**
 
 This repository contains the source code for a microservices-based **E-commerce Application** built with 11 distinct microservices. The project is fully automated using **Jenkins** for Continuous Integration (CI) and Continuous Deployment (CD), and is deployed to **AWS EKS (Elastic Kubernetes Service)**. The entire pipeline is triggered automatically whenever code changes are pushed to the GitHub repository.
