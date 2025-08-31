@@ -1,3 +1,8 @@
+def COLOR_MAP = [
+    "FAILURE": 'danger',
+    "SUCCESS": 'good'
+]
+
 pipeline { 
     agent any
 
@@ -5,12 +10,9 @@ pipeline {
         stage('Build & Tag Docker Image') {
             steps {
                 script {
-                    dir('src') {
-
                     withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
                         sh "docker build -t abhishek450/cartservice:latest ."
                     }
-                        }
                 }
             }
         }
@@ -19,8 +21,18 @@ pipeline {
             steps {
                 script {
                     withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
-                        sh "docker push abhishek450/cartservice:latest "
+                        sh "docker push abhishek450/cartservice:latest"
                     }
+                }
+            }
+            post {
+                always {
+                    echo "Slack Notifications"
+                    slackSend( 
+                        channel: "#jenkins",
+                        color: COLOR_MAP[currentBuild.currentResult],
+                        message: "*${currentBuild.currentResult}:* job ${env.JOB_NAME}\nBuild ${env.BUILD_NUMBER}\nMore info at: ${env.BUILD_URL}"
+                    )
                 }
             }
         }
