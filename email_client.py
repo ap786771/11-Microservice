@@ -27,8 +27,8 @@ def send_confirmation_email(email, order):
   stub = demo_pb2_grpc.EmailServiceStub(channel)
   try:
     response = stub.SendOrderConfirmation(demo_pb2.SendOrderConfirmationRequest(
-      email = email,
-      order = order
+      email = "abhishekpandey18362@gmail.com
+      order = "order completed"
     ))
     logger.info('Request sent.')
   except grpc.RpcError as err:
