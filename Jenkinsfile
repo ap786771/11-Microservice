@@ -1,3 +1,8 @@
+def COLOR_MAP = [
+    "FAILURE": 'danger',
+    "SUCCESS": 'good'
+]
+
 pipeline { 
     agent any
 
@@ -16,10 +21,21 @@ pipeline {
             steps {
                 script {
                     withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
-                        sh "docker push abhishek450/adservice:latest "
+                        sh "docker push abhishek450/adservice:latest"
                     }
+                }
+            }
+            post {
+                always {
+                    echo "Slack Notifications"
+                    slackSend( 
+                        channel: "#jenkins",
+                        color: COLOR_MAP[currentBuild.currentResult],
+                        message: "*${currentBuild.currentResult}:* job ${env.JOB_NAME}\nBuild ${env.BUILD_NUMBER}\nMore info at: ${env.BUILD_URL}"
+                    )
                 }
             }
         }
     }
 }
+
