@@ -1,36 +1,45 @@
-#!/usr/bin/python
-#
-# Copyright 2018 Google LLC
-# Licensed under the Apache License, Version 2.0
-#
-# Author: Abhishek Pandey (modified)
-
+import os
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 import grpc
 import demo_pb2
 import demo_pb2_grpc
 
-from logger import getJSONLogger
-logger = getJSONLogger('emailservice-client')
+class EmailService(demo_pb2_grpc.EmailServiceServicer):
+    def SendOrderConfirmation(self, request, context):
+        try:
+            sender = os.environ['EMAIL_SENDER']
+            recipient = request.email
 
-def send_confirmation_email(email, order):
-    channel = grpc.insecure_channel('[::]:8080')   # gRPC service running on 8080
-    stub = demo_pb2_grpc.EmailServiceStub(channel)
-    try:
-        response = stub.SendOrderConfirmation(
-            demo_pb2.SendOrderConfirmationRequest(
-                email=email,
-                order=order
-            )
-        )
-        logger.info('Request sent successfully.')
-        return response
-    except grpc.RpcError as err:
-        logger.error(err.details())
-        logger.error('{}, {}'.format(err.code().name, err.code().value))
+            subject = "Your Order is Complete!"
+            html = f"""
+            <html>
+              <body style="font-family: Arial, sans-serif;">
+                <h2>Your order is complete! 🎉</h2>
+                <p>We've sent you a confirmation email.</p>
+                <p><b>Confirmation #</b><br>{request.confirmation_id}</p>
+                <p><b>Tracking #</b><br>{request.tracking_id}</p>
+                <p><b>Total Paid</b><br>${request.total_paid}</p>
+                <hr>
+                <p>Thank you for shopping with us!</p>
+              </body>
+            </html>
+            """
 
-if __name__ == '__main__':
-    logger.info('Client for email service.')
-    send_confirmation_email(
-        "abhishekpandey18362@gmail.com",
-        "Your order is complete! Confirmation #04c855ea, Tracking #AD-37028-188890567, Total Paid $27.98"
-    )
+            msg = MIMEMultipart("alternative")
+            msg["Subject"] = subject
+            msg["From"] = sender
+            msg["To"] = recipient
+            msg.attach(MIMEText(html, "html"))
+
+            with smtplib.SMTP(os.environ['SMTP_HOST'], int(os.environ['SMTP_PORT'])) as server:
+                server.starttls()
+                server.login(os.environ['SMTP_USER'], os.environ['SMTP_PASS'])
+                server.sendmail(sender, recipient, msg.as_string())
+
+            return demo_pb2.SendOrderConfirmationResponse(success=True)
+        except Exception as e:
+            context.set_details(str(e))
+            context.set_code(grpc.StatusCode.INTERNAL)
+            return demo_pb2.SendOrderConfirmationResponse(success=False)
