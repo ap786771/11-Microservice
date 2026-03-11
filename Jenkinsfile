@@ -1,4 +1,4 @@
-def COLOR_MAP = [
+def COLOR_MAP = [ 
     "FAILURE" : 'danger',
     "SUCCESS" : 'good'
 ]    
